@@ -1,12 +1,31 @@
 const express = require('express');
-
 const router = express.Router();
+const passport = require('passport');
 
-// require the corresponding controller.js file
 const usersController = require('../controllers/users_controller');
 
-// using the action function for specifies route..which is present inside the required controller module
-router.get('/profile', usersController.profile);
+//url : /users/profile --> this route will not work as this is diff from -->  /users/profile/:id (This route will only work for q params) 
+router.get('/profile/:id', passport.checkAuthentication, usersController.profile);
 
-// This router is valid for this file only...so we are exporting it...and using it by router.use() in index.js file
+
+router.post('/update/:id', passport.checkAuthentication, usersController.update);
+
+
+router.get('/sign-up', usersController.signUp);
+router.get('/sign-in', usersController.signIn);
+
+
+router.post('/create', usersController.create);
+
+// use passport as a middleware to authenticate
+router.post('/create-session', passport.authenticate(
+    'local',
+    {failureRedirect: '/users/sign-in'},
+), usersController.createSession);
+
+
+
+
+router.get('/sign-out', usersController.destroySession);
+
 module.exports = router;

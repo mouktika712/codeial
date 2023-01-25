@@ -1,0 +1,56 @@
+<html>
+  <head>
+    <title><%= title %></title>
+    <script
+      type="text/javascript"
+      src="http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.min.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="https://cdnjs.cloudflare.com/ajax/libs/jquery-noty/2.4.1/jquery.noty.min.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="https://cdnjs.cloudflare.com/ajax/libs/jquery-noty/2.4.1/layouts/top.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="https://cdnjs.cloudflare.com/ajax/libs/jquery-noty/2.4.1/themes/default.js"
+    ></script>
+
+    <link rel="stylesheet" href="/CSS/layout.css" />
+    <link rel="stylesheet" href="/CSS/header.css" />
+    <link rel="stylesheet" href="/CSS/footer.css" />
+
+    <%- style %>
+  </head>
+
+  <body>
+    <%- include('_header'); %>
+
+    <main id="layout-main"><%- body %></main>
+
+    <%- include('_footer'); %> <%- script %>
+    <script>
+      if (flash.success && flash.success.length > 0) {
+        $.noty.defaults = {
+          theme: "metroui",
+          text: flash.success,
+          type: "success",
+          layout: "topCentre",
+          timeout: false,
+        };
+      }
+
+      if (flash.error && flash.error.length > 0) {
+        $.noty.defaults = {
+          theme: "metroui",
+          text: flash.error,
+          type: "error",
+          layout: "topCentre",
+          timeout: false,
+        };
+      }
+    </script>
+  </body>
+</html>

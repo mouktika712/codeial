@@ -2,7 +2,10 @@
 const mongoose = require('mongoose');
 
 // connect your ODM nmongoose with your database mongoDB
-mongoose.connect('mongodb://localhost/todo-app');
+mongoose.connect('mongodb://localhost:27017/user',{
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+});
 
 // acquire the connection
 const db = mongoose.connection;

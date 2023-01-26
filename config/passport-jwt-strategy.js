@@ -6,8 +6,11 @@ const ExtractJWT = require("passport-jwt").ExtractJwt;
 
 const User = require("../models/user");
 
+console.log("jwt is beig used here for user authentication");
+
+
 let opts = {
-  jwtFromRequest : ExtractJWT.fromAuthHeaderAsBearerToken(),
+  jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
   secretOrKey: "codeial",
 };
 
@@ -27,4 +30,28 @@ passport.use(
   })
 );
 
+
 module.exports = passport;
+
+/*
+// this code is for the case when the user already has his jwt and we are 
+just authenticating the user using jwt coming from req.header
+passport.use(jwtStrategy);
+
+opts = {
+  extract the jwt from header using Extractjwt of passport-jwt,
+  set a secret key
+}
+jwtStrategy = new JWTStrategy(opts, callback);
+
+const callback = function (jwtPayload, done function) {
+  find the user by id (compare database id with payload id){
+    if error : pass error, false
+    if there is no error: pass null as 1st arg: {
+      if user found pass the user as the second arg 
+      else pass false(not found)
+    }
+    done takes 2 args: done(err, user)
+  }
+}
+*/

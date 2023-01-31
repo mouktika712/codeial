@@ -17,11 +17,11 @@ let renderTemplate = (data, relativePath) => {
   let mailHTML;
 
   ejs.renderFile(
-    path.join(__dirname, "../views/mailer", relativePath),
+    path.join(__dirname, "../views/mailers", relativePath),
     data,
     function (err, template) {
       if (err) {
-        console.log("Error in rendering the template");
+        console.log("Error in rendering the template", err);
         requestAnimationFrame;
       }
       mailHTML = template;

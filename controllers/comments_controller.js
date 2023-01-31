@@ -1,122 +1,78 @@
-const Comment = require('../models/comment');
-const Post = require('../models/post');
+const Comment = require("../models/comment");
+const Post = require("../models/post");
+const commentsMailer = require("../mailers/comments_mailer");
+const queue = require("../config/kue");
+const commentEmailWorker = require("../workers/comment_email_worker");
 
 module.exports.create = async function (req, res) {
-    try {
-        let post = await Post.findById(req.body.post);
+  try {
+    let post = await Post.findById(req.body.post);
 
-        if(post) {
-            let comment = await Comment.create({
-                content: req.body.content,
-                post: req.body.post,
-                user: req.user._id
-            });
+    if (post) {
+      let comment = await Comment.create({
+        content: req.body.content,
+        post: req.body.post,
+        user: req.user._id,
+      });
 
-            post.comments.push(comment);
-            post.save();
+      post.comments.push(comment);
+      post.save();
 
-            if(req.xhr) {
-                return res.status(200).json({
-                    data: {
-                        comment: comment,
-                        post: post
-                    },
-                    message: "Comment Created!"
-                });
-            }
+      comment = await comment.populate("user", "name email");
 
-            res.redirect('/');
+      // commentsMailer.newComment(comment);
+      let job = queue.create("emails", comment).save(function (err) {
+        if (err) {
+          console.log("Error in enqueuing a job in the emails queue", err);
+          return;
         }
-    }catch(err) {
-        console.log('Error', err);
-        return;
+
+        console.log("Job enqueued", job.id);
+      });
+
+      if (req.xhr) {
+        return res.status(200).json({
+          data: {
+            comment: comment,
+          },
+          message: "Post created!",
+        });
+      }
+
+      req.flash("success", "Comment published!");
+
+      res.redirect("/");
     }
-}
+  } catch (err) {
+    req.flash("error", err);
+    return;
+  }
+};
 
-// module.exports.create = function(req, res){
-//     Post.findById(req.body.post, function(err, post){
+module.exports.destroy = async function (req, res) {
+  try {
+    let comment = await Comment.findById(req.params.id);
 
-//         if (post){
-//             Comment.create({
-//                 content: req.body.content,
-//                 post: req.body.post,
-//                 user: req.user._id
-//             }, function(err, comment){
-//                 // handle error
+    if (comment.user == req.user.id) {
+      let postId = comment.post;
+      comment.remove();
 
-//                 post.comments.push(comment);
-//                 post.save();
-
-//                 res.redirect('/');
-//             });
-//         }
-
-//     });
-// }
-
-// this function will not delete the comment from the post schema's (comments array)...even if we delete the comment and it will not be shown on the website
-// it will remain in the post schema 
-// module.exports.destroy = function(req, res) {
-//     Comment.findById(req.params.id, function(err, comment) {
-//         // Adding Controller level check
-//         if(comment.user == req.user.id) {
-//             comment.remove();
-//         }
-
-//         return res.redirect('back');
-//     });
-// }
-
-
-module.exports.destroy = async function(req, res) {
-    try {
-        let comment = await Comment.findById(req.params.id);
-
-        if(comment.user == req.user.id) {
-            let postId = comment.post;
-            comment.remove();
-
-            await Post.findByIdAndUpdate(postId, {$pull: {comments: req.params.id}});
-        }
-
-
-        if(req.xhr) {
-            return res.status(200).json({
-                data: {
-                    comment: comment
-                },
-                message: "Comment Deleted!"
-            })
-        }
-
-        console.log('ajax destroy not working');
-        return res.redirect('back');
-        
-    }catch(err) {
-        console.log('Error', err);
-        return;
+      await Post.findByIdAndUpdate(postId, {
+        $pull: { comments: req.params.id },
+      });
     }
 
-}
-
-
-// module.exports.destroy = function (req, res) {
-//     Comment.findById(req.params.id, function(err, comment) {
-//         if(comment.user == req.user.id) {
-//             // Once the comment has been removed the post id linked with the comment will be lost as well
-//             // but as we need the post id to delete the comment from the db (post schema's comment array)
-//             // we are storing it in a variable beforehand
-//             let postId = comment.post;
-
-//             // remove the comment 
-//             comment.remove();
-
-//             // find the post by id and update the comments array for that post
-//             Post.findByIdAndUpdate(postId, {$pull: {comments: req.params.id}}, function(err, post) {
-//                 return res.redirect('back');
-//             })
-//         }else {
-//             return res.redirect('back');
-//         }
-//     });
-// }
+    if (req.xhr) {
+      return res.status(200).json({
+        data: {
+          comment: comment,
+        },
+        message: "Comment Deleted!",
+      });
+    }
+    return res.redirect("back");
+  } catch (err) {
+    console.log("Error", err);
+    return;
+  }
+};

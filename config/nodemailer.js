@@ -8,22 +8,22 @@ let transporter = nodemailer.createTransport({
   port: 587,
   secure: false,
   auth: {
-    user: "mouktikanamde712@gmail.com",
-    pass: "##2624!Yugandhar",
+    user: "mouktikanamde712",
+    pass: "jbmnnrrerqanxqcp",
   },
 });
 
 let renderTemplate = (data, relativePath) => {
   let mailHTML;
-
   ejs.renderFile(
     path.join(__dirname, "../views/mailers", relativePath),
     data,
     function (err, template) {
       if (err) {
-        console.log("Error in rendering the template", err);
-        requestAnimationFrame;
+        console.log("error in rendering template", err);
+        return;
       }
+
       mailHTML = template;
     }
   );
@@ -32,6 +32,6 @@ let renderTemplate = (data, relativePath) => {
 };
 
 module.exports = {
-  transporter,
-  renderTemplate,
+  transporter: transporter,
+  renderTemplate: renderTemplate,
 };

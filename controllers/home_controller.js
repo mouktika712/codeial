@@ -15,7 +15,11 @@ module.exports.home = async function (req, res) {
         populate: {
           path: "user",
         },
-      });
+        populate: {
+          path: "likes", //this is for comments like
+        },
+      })
+      .populate("likes"); //this is for a Post like
 
     // the callback for find is not needed in case of await...the result will be stored in the variable
     // Then wait for this to get completed
